@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+spring:
+  cloud:
+    aws:
+      region:
+        static: sa-east-1
+      credentials:
+        access-key: test
+        secret-key: test
+      dynamodb:
+        endpoint: http://localhost:4566
+        enabled: true
+      sqs:
+        endpoint: http://localhost:4566
+        enabled: true
+        listener:
+          max-concurrent-messages: 10
+          max-messages-per-poll: 10
+          visibility-timeout: 30s
+
+# Table name #
+balance:
+  table:
+    name: "tb_balance"
+
+# ACTUATOR #
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    info:
+      enabled: true
