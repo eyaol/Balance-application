@@ -93,6 +93,13 @@ Exemplo de colecao Insomnia (salve como `balance-collection.json` e importe no I
 }
 ```
 
+## Monitoramento
+
+Grafana:
+- Acesse `http://localhost:3000`
+- Usuario/senha padrao: `admin` / `admin`
+- O dashboard "Balance Application" ja aparece carregado
+
 ## Arquitetura em producao (exemplo)
 
 Diagrama ilustrativo com blue/green no target group, consumo via SQS do sistema Autorizador e autoscaling por TPS:

@@ -8,6 +8,7 @@ import io.awspring.cloud.sqs.listener.acknowledgement.Acknowledgement;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ public class SqsListenerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsListenerAdapter.class);
     private final UpdateBalanceUseCase useCase;
     private final CircuitBreakerRegistry registry;
+    private final Counter messagesConsumedCounter;
 
     /**
      * Processa mensagens recebidas da fila SQS 'transacoes-financeiras-processadas'.
@@ -55,6 +57,7 @@ public class SqsListenerAdapter {
             );
 
             ack.acknowledge();
+            messagesConsumedCounter.increment();
 
         } catch (Exception e) {
             LOGGER.error(
