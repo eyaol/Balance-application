@@ -121,9 +121,17 @@ flowchart LR
   tg_green --> svc_green
 
   auth[Autorizador] --> sqs[SQS]
+  sqs --> dlq[DLQ]
   sqs --> app[Balance Application]
 
   app --> ecsf
 
   scaling[Auto Scaling TPS] --> ecsf
 ```
+
+Descricao do deploy blue/green:
+1. A versao Blue esta recebendo 100% do trafego no ALB.
+2. A versao Green e criada no ECS Fargate com o novo release.
+3. Health checks e testes validam a Green sem impactar usuarios.
+4. O ALB troca o target group para Green (100% ou canario).
+5. Se houver problema, o trafego volta para Blue rapidamente.
