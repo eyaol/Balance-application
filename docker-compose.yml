@@ -29,8 +29,6 @@ services:
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
       AWS_DEFAULT_REGION: sa-east-1
-    volumes:
-      - ./dynamodb:/scripts
     entrypoint: |
       sh -c '
       aws --endpoint-url=http://localstack:4566 dynamodb create-table \
@@ -53,8 +51,8 @@ services:
       - LOCALSTACK_ENDPOINT=http://localstack:4566
 
       # Generator settings
-      - TOTAL_TRANSACTIONS=25000
-      - TOTAL_ACCOUNTS=2000
+      - TOTAL_TRANSACTIONS=1000
+      - TOTAL_ACCOUNTS=200
       - MIN_TRANSACTION_AMOUNT=0
       - MAX_TRANSACTION_AMOUNT=100
       
