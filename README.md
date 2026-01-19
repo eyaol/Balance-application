@@ -103,7 +103,7 @@ flowchart LR
   apigw --> vpclink[VPC Link v2]
   vpclink --> alb[ALB]
 
-  subgraph tg[Target Group (Blue/Green)]
+  subgraph tg[Target Group Blue Green]
     direction TB
     tg_blue[Blue]:::blue
     tg_green[Green]:::green
