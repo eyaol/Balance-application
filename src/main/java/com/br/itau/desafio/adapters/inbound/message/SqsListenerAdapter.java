@@ -60,11 +60,7 @@ public class SqsListenerAdapter {
             messagesConsumedCounter.increment();
 
         } catch (Exception e) {
-            LOGGER.error(
-                    "Error processing SQS message. Will retry. Error: {}",
-                    e.getMessage(),
-                    e
-            );
+            LOGGER.error("Error processing SQS message. Will retry. Error: {}", e.getMessage(), e);
         }
     }
 

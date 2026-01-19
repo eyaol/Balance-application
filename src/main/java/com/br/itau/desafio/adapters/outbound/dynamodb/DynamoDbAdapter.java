@@ -77,8 +77,7 @@ public class DynamoDbAdapter implements DynamoDbRepository {
                 .conditionExpression(
                         Expression.builder()
                                 .expression("attribute_not_exists(account_id) AND attribute_not_exists(owner_id)")
-                                .build()
-                ).build();
+                                .build()).build();
     }
 
     /**
