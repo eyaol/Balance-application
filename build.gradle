@@ -41,6 +41,9 @@ dependencies {
 	// Integração com AWS DYNAMODB
 	implementation "io.awspring.cloud:spring-cloud-aws-starter-dynamodb:${springCloudVersion}"
 
+	// AWS SDK Netty NIO async HTTP client for custom connection pool
+	implementation 'software.amazon.awssdk:netty-nio-client:2.25.32'
+
 	// Suporte a Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -51,6 +54,10 @@ dependencies {
 	// Dependências de teste
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Resilience4j para Spring Boot 3
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.3.0'
+
 }
 
 tasks.named('test') {

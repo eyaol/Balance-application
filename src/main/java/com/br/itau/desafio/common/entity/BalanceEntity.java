@@ -9,6 +9,12 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 
 import java.math.BigDecimal;
 
+/**
+ * Entidade que representa o saldo de uma conta no DynamoDB.
+ * Utiliza anotações do AWS SDK para mapeamento de atributos.
+ *
+ * @since 2026-01-18
+ */
 @Builder
 @Data
 @NoArgsConstructor
@@ -34,6 +40,10 @@ public class BalanceEntity {
     @Getter(onMethod_ = @DynamoDbAttribute("transaction_id"))
     private String transactionId;
 
+    /**
+     * Retorna o TableSchema para mapeamento da entidade no DynamoDB.
+     * @return TableSchema de BalanceEntity
+     */
     public static TableSchema<BalanceEntity> getTableSchema() {
         return TableSchema.fromBean(BalanceEntity.class);
     }

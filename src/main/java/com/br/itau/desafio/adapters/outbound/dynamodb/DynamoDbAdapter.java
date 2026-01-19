@@ -2,6 +2,9 @@ package com.br.itau.desafio.adapters.outbound.dynamodb;
 
 import com.br.itau.desafio.application.port.outbound.DynamoDbRepository;
 import com.br.itau.desafio.common.entity.BalanceEntity;
+import com.br.itau.desafio.common.exception.ItemNotFoundException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +33,8 @@ public class DynamoDbAdapter implements DynamoDbRepository {
     private final DynamoDbAsyncTable<BalanceEntity> balanceTableAsync;
     private final DynamoDbTable<BalanceEntity> balanceTable;
     private final DynamoDbAsyncClient dynamoDbAsyncClient;
-    @Value("${balance.table.name}")
+
+    @Value("${aws.dynamodb.table-name}")
     private String balanceTableName;
 
     /**
@@ -41,6 +45,11 @@ public class DynamoDbAdapter implements DynamoDbRepository {
      * @param entity Entidade de saldo a ser salva ou atualizada.
      */
     @Override
+    @Retry(name = "saveBalance")
+    @CircuitBreaker(
+            name = "saveBalance",
+            fallbackMethod = "fallbackBalance"
+    )
     public void saveBalance(BalanceEntity entity) {
         PutItemEnhancedRequest<BalanceEntity> request = buildPutRequest(entity);
         balanceTableAsync.putItem(request).whenComplete((result, throwable) -> {
@@ -51,6 +60,7 @@ public class DynamoDbAdapter implements DynamoDbRepository {
                 updateBalanceFields(entity);
             } else {
                 LOGGER.error("Error saving balance to DynamoDB", throwable);
+                throw new RuntimeException("Error saving balance to DynamoDB");
             }
         });
     }
@@ -106,7 +116,6 @@ public class DynamoDbAdapter implements DynamoDbRepository {
         });
     }
 
-
     /**
      * Recupera o primeiro saldo do DynamoDB pelo accountId (partition key), usando query com leitura consistente.
      *
@@ -115,25 +124,26 @@ public class DynamoDbAdapter implements DynamoDbRepository {
      */
     @Override
     public BalanceEntity getBalanceByAccountId(String accountId) {
-        try {
-            var results = balanceTable.query(r -> r
-                    .queryConditional(
-                            QueryConditional.keyEqualTo(
-                                    Key.builder().partitionValue(accountId).build())
-                    )
-                    .consistentRead(true)
-            ).items();
-            BalanceEntity entity = results.iterator().hasNext() ? results.iterator().next() : null;
-            if (entity != null) {
-                LOGGER.info("Balance retrieved successfully for accountId: {}: {}", accountId, entity);
-            } else {
-                LOGGER.warn("No balance found for accountId: {}", accountId);
-            }
+        var results = balanceTable.query(r -> r
+                .queryConditional(
+                        QueryConditional.keyEqualTo(
+                                Key.builder().partitionValue(accountId).build())
+                )
+                .consistentRead(true)
+        ).items();
+        BalanceEntity entity = results.iterator().hasNext() ? results.iterator().next() : null;
+        if (entity != null) {
+            LOGGER.info("Balance retrieved successfully for accountId: {}: {}", accountId, entity);
             return entity;
-        } catch (Exception e) {
-            LOGGER.error("Error retrieving balance from DynamoDB", e);
-            throw e;
+        } else {
+            LOGGER.error("Balance not found for accountId: {}", accountId);
+            throw new ItemNotFoundException("Account", accountId);
         }
+    }
+
+    public String fallbackBalance(Exception e, BalanceEntity entity) {
+        LOGGER.error("Failed to save balance after retries: {}", entity, e);
+        throw new RuntimeException("Failed to save balance after retries", e);
     }
 
 }

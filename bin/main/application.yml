@@ -8,30 +8,27 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
-aws:
-  region: sa-east-1
-  credentials:
-    access-key: ${AWS_ACCESS_KEY_ID:test}
-    secret-key: ${AWS_SECRET_ACCESS_KEY:test}
-  dynamodb:
-    endpoint: ${DYNAMODB_ENDPOINT:http://localhost:4566}
-    table-name: ${TABLE_NAME:tb_balance}
-    http-client:
-      max-concurrency: ${DYNAMODB_MAX_CONCURRENCY:200}
-      max-pending-connection-acquires: ${DYNAMODB_MAX_PENDING:20000}
-      connection-acquisition-timeout: ${DYNAMODB_ACQUIRE_TIMEOUT:30s}
-  sqs:
-    endpoint: ${SQS_ENDPOINT:http://localhost:4566}
-    queue-name: ${QUEUE_NAME:transacoes-financeiras-processadas}
-    listener:
-      concurrency: ${SQS_CONCURRENCY:5}
-      max-number-of-messages: ${SQS_MAX_MESSAGES:5}
-      wait-time-seconds: ${SQS_WAIT_TIME:30}
-      visibility-timeout-seconds: ${SQS_VISIBILITY_TIMEOUT:60}
+spring:
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:sa-east-1}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID:test}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:test}
+      dynamodb:
+        endpoint: ${ENDPOINT:http://localhost:4566}
+      sqs:
+        endpoint: ${ENDPOINT:http://localhost:4566}
+        listener:
+          max-concurrent-messages: 50
+          max-messages-per-poll: 10
+          visibility-timeout: 30s
 
+# Table name #
 balance:
   table:
-    name: ${BALANCE_TABLE_NAME:tb_balance}
+    name: "tb_balance"
 
 # Actuator #
 management:

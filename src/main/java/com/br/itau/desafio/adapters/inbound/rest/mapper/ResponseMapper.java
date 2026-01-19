@@ -1,6 +1,6 @@
 package com.br.itau.desafio.adapters.inbound.rest.mapper;
 
-import com.br.itau.desafio.adapters.inbound.rest.dto.BalanceResponseDTO;
+import com.br.itau.desafio.adapters.inbound.rest.dto.ApiResponseDTO;
 import com.br.itau.desafio.common.entity.BalanceEntity;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +11,11 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class ResponseMapper {
 
-    public BalanceResponseDTO toBalanceResponse(BalanceEntity entity) {
-        return new BalanceResponseDTO(
+    public ApiResponseDTO toBalanceResponse(BalanceEntity entity) {
+        return new ApiResponseDTO(
                 entity.getAccountId(),
                 entity.getOwnerId(),
-                new BalanceResponseDTO.BalanceDTO(entity.getAmount(), entity.getCurrency()),
+                new ApiResponseDTO.BalanceDTO(entity.getAmount(), entity.getCurrency()),
                 formatTimestamp(entity.getUpdatedAt())
         );
     }

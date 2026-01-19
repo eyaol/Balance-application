@@ -6,6 +6,12 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
+/**
+ * Entidade que representa uma transação financeira no DynamoDB.
+ * Utiliza anotações do AWS SDK para mapeamento de atributos.
+ *
+ * @since 2026-01-18
+ */
 @Builder
 @Data
 @NoArgsConstructor
