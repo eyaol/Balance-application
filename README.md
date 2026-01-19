@@ -111,30 +111,19 @@ flowchart LR
 
   alb --> tg
 
-  subgraph compute[Compute]
+  subgraph ecsf[ECS Fargate]
     direction TB
-    ecs[ECS Fargate / ECS]
-    eks[EKS]
+    svc_blue[Service Blue]
+    svc_green[Service Green]
   end
 
-  tg_blue --> ecs
-  tg_green --> ecs
-  tg_blue --> eks
-  tg_green --> eks
+  tg_blue --> svc_blue
+  tg_green --> svc_green
 
   auth[Autorizador] --> sqs[SQS]
   sqs --> app[Balance Application]
 
-  app --> ecs
-  app --> eks
+  app --> ecsf
 
-  scaling[Auto Scaling TPS] --> ecs
-  scaling --> eks
-```
-
-Diagrama simples:
-
-```mermaid
-flowchart LR
-  client[Client] --> apigw[API Gateway]
+  scaling[Auto Scaling TPS] --> ecsf
 ```
