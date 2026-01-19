@@ -105,8 +105,8 @@ flowchart LR
 
   subgraph tg[Target Group Blue Green]
     direction TB
-    tg_blue[Blue]:::blue
-    tg_green[Green]:::green
+    tg_blue[Blue]
+    tg_green[Green]
   end
 
   alb --> tg
@@ -119,6 +119,8 @@ flowchart LR
 
   tg_blue --> ecs
   tg_green --> ecs
+  tg_blue --> eks
+  tg_green --> eks
 
   auth[Autorizador] --> sqs[SQS]
   sqs --> app[Balance Application]
@@ -126,8 +128,13 @@ flowchart LR
   app --> ecs
   app --> eks
 
-  scaling[Auto Scaling (TPS)] --> ecs
+  scaling[Auto Scaling TPS] --> ecs
+  scaling --> eks
+```
 
-  classDef blue fill:#d6ebff,stroke:#1d4ed8,color:#1e3a8a;
-  classDef green fill:#dcfce7,stroke:#15803d,color:#14532d;
+Diagrama simples:
+
+```mermaid
+flowchart LR
+  client[Client] --> apigw[API Gateway]
 ```
