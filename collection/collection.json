@@ -1,0 +1,35 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-01-19T00:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "req_get_balance",
+      "_type": "request",
+      "parentId": "wrk_balance",
+      "name": "Get Balance",
+      "method": "GET",
+      "url": "http://localhost:8080/balances/{{ accountId }}",
+      "parameters": [],
+      "headers": [],
+      "authentication": {}
+    },
+    {
+      "_id": "wrk_balance",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "Balance Application",
+      "description": ""
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_balance",
+      "name": "Base Environment",
+      "data": {
+        "accountId": "seu-account-id"
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+aws:
+  region: sa-east-1
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID:test}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:test}
+  dynamodb:
+    endpoint: ${DYNAMODB_ENDPOINT:http://localhost:4566}
+    table-name: ${TABLE_NAME:tb_balance}
+    http-client:
+      max-concurrency: ${DYNAMODB_MAX_CONCURRENCY:200}
+      max-pending-connection-acquires: ${DYNAMODB_MAX_PENDING:20000}
+      connection-acquisition-timeout: ${DYNAMODB_ACQUIRE_TIMEOUT:30s}
+  sqs:
+    endpoint: ${SQS_ENDPOINT:http://localhost:4566}
+    queue-name: ${QUEUE_NAME:transacoes-financeiras-processadas}
+    listener:
+      concurrency: ${SQS_CONCURRENCY:5}
+      max-number-of-messages: ${SQS_MAX_MESSAGES:5}
+      wait-time-seconds: ${SQS_WAIT_TIME:30}
+      visibility-timeout-seconds: ${SQS_VISIBILITY_TIMEOUT:60}
+
+balance:
+  table:
+    name: ${BALANCE_TABLE_NAME:tb_balance}
+
+# Actuator #
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    info:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+
+# Retry e Circuitbreaker #
+resilience4j:
+  retry:
+    instances:
+      paymentService:
+        maxAttempts: 3
+        waitDuration: 800ms
+        retryExceptions:
+          - java.lang.RuntimeException
+
+  circuitbreaker:
+    instances:
+      saveBalance:
+        slidingWindowSize: 20 # Observa as últimas 20 tentativas
+        minimumNumberOfCalls: 10 # Precisa ter pelo menos 10 tentativas para decidir
+        failureRateThreshold: 50 # Se 50% ou mais falharem = ABRE O CIRCUITO
+        waitDurationInOpenState: 10s # Permanece aberto por 10s, depois fecha
