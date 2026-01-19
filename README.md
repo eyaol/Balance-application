@@ -33,6 +33,25 @@ Variaveis de ambiente importantes (valores padrao em `src/main/resources/applica
 - `SQS_ENDPOINT=http://localhost:4566`
 - `QUEUE_NAME=transacoes-financeiras-processadas`
 
+## Aumentar quantidade de mensagens (message-generator)
+
+No `docker-compose.yml`, ajuste as propriedades do servico `message-generator` para gerar mais dados:
+
+```yml
+    environment:
+      - TOTAL_TRANSACTIONS=50000
+      - TOTAL_ACCOUNTS=10000
+      - MIN_TRANSACTION_AMOUNT=0
+      - MAX_TRANSACTION_AMOUNT=100
+```
+
+Depois de salvar, suba novamente os containers para aplicar as novas quantidades.
+
+```bash
+docker compose up --build --force-recreate
+```
+
+
 ## Docker Compose (dependencias)
 
 O arquivo `docker-compose.yml` sobe:
@@ -44,6 +63,7 @@ O arquivo `docker-compose.yml` sobe:
 Para subir tudo:
 
 ```bash
+cd Balance-application
 docker compose up --build
 ```
 
