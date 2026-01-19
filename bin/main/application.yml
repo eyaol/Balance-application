@@ -1,0 +1,70 @@
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+spring:
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:sa-east-1}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY_ID:test}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:test}
+      dynamodb:
+        endpoint: ${ENDPOINT:http://localhost:4566}
+      sqs:
+        endpoint: ${ENDPOINT:http://localhost:4566}
+        listener:
+          max-concurrent-messages: 50
+          max-messages-per-poll: 10
+          visibility-timeout: 30s
+
+# Table name #
+balance:
+  table:
+    name: "tb_balance"
+
+# Actuator #
+management:
+  endpoints:
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    info:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+
+# Retry e Circuitbreaker #
+resilience4j:
+  retry:
+    instances:
+      paymentService:
+        maxAttempts: 3
+        waitDuration: 800ms
+        retryExceptions:
+          - java.lang.RuntimeException
+
+  circuitbreaker:
+    instances:
+      saveBalance:
+        slidingWindowSize: 20 # Observa as últimas 20 tentativas
+        minimumNumberOfCalls: 10 # Precisa ter pelo menos 10 tentativas para decidir
+        failureRateThreshold: 50 # Se 50% ou mais falharem = ABRE O CIRCUITO
+        waitDurationInOpenState: 10s # Permanece aberto por 10s, depois fecha

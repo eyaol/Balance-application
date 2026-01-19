@@ -1,2 +1,166 @@
 # Balance-application
-Balance-application
+
+## Execucao local
+
+Requisitos:
+- Java 21
+- Docker e Docker Compose
+
+Suba as dependencias (LocalStack + DynamoDB + gerador de mensagens):
+
+```bash
+docker compose up -d localstack dynamodb-init message-generator
+```
+
+Suba a aplicacao localmente:
+
+```bash
+cd Balance-application
+./gradlew bootRun
+```
+
+Ou gere o jar e execute:
+
+```bash
+cd Balance-application
+./gradlew clean build -x test
+java -jar build/libs/desafio-0.0.1-SNAPSHOT.jar
+```
+
+Variaveis de ambiente importantes (valores padrao em `src/main/resources/application.yml`):
+- `AWS_REGION=sa-east-1`
+- `DYNAMODB_ENDPOINT=http://localhost:4566`
+- `SQS_ENDPOINT=http://localhost:4566`
+- `QUEUE_NAME=transacoes-financeiras-processadas`
+
+## Execucao Local com Docker Compose (dependencias)
+
+O arquivo `docker-compose.yml` sobe:
+- `localstack` com SQS e DynamoDB
+- `dynamodb-init` para criar a tabela `tb_balance`
+- `message-generator` para popular a fila `transacoes-financeiras-processadas`
+- `desafio-app` (opcional) para rodar a aplicacao em container
+- `prometheus` (opcional) para rodar o prometheus
+- `grafana` (opcional) para rodar o grafana
+
+Para subir tudo:
+
+```bash
+cd Balance-application
+docker compose up --build
+```
+
+## Colecao de requisicoes
+
+Endpoint disponivel:
+
+```bash
+GET http://localhost:8080/balances/{accountId}
+```
+
+Exemplo com curl:
+
+```bash
+curl http://localhost:8080/balances/{accountId}
+```
+
+## Aumentar quantidade de mensagens (message-generator)
+
+No `docker-compose.yml`, ajuste as propriedades do servico `message-generator` para gerar mais dados:
+
+```yml
+    environment:
+      - TOTAL_TRANSACTIONS=50000
+      - TOTAL_ACCOUNTS=10000
+      - MIN_TRANSACTION_AMOUNT=0
+      - MAX_TRANSACTION_AMOUNT=100
+```
+
+Depois de salvar, suba novamente os containers para aplicar as novas quantidades.
+
+```bash
+docker compose up --build --force-recreate
+```
+
+
+Exemplo de colecao Insomnia (salve como `balance-collection.json` e importe no Insomnia):
+
+```json
+{
+  "info": {
+    "name": "Balance Application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Balance",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/balances/{{accountId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["balances", "{{accountId}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "accountId",
+      "value": "seu-account-id"
+    }
+  ]
+}
+```
+
+## Monitoramento
+
+Grafana:
+- Acesse `http://localhost:3000`
+- Usuario/senha padrao: `admin` / `admin`
+- O dashboard "Balance Application" ja aparece carregado
+
+## Arquitetura em producao (exemplo)
+
+Diagrama ilustrativo com blue/green no target group, consumo via SQS do sistema Autorizador e autoscaling por TPS:
+
+```mermaid
+flowchart LR
+  client[Client] --> apigw[API Gateway]
+  apigw --> vpclink[VPC Link v2]
+  vpclink --> alb[ALB]
+
+  subgraph tg[Target Group Blue Green]
+    direction TB
+    tg_blue[Blue]
+    tg_green[Green]
+  end
+
+  alb --> tg
+
+  subgraph ecsf[ECS Fargate]
+    direction TB
+    svc_blue[Service Blue]
+    svc_green[Service Green]
+  end
+
+  tg_blue --> svc_blue
+  tg_green --> svc_green
+
+  auth[Autorizador] --> sqs[SQS]
+  sqs --> dlq[DLQ]
+  sqs --> app[Balance Application]
+
+  app --> ecsf
+
+  scaling[Auto Scaling TPS] --> ecsf
+```
+
+Descrição do deploy blue/green:
+1. A versão Blue está recebendo 100% do tráfego no ALB.
+2. A versão Green é criada no ECS Fargate com o novo release.
+3. Health checks e testes validam a Green sem impactar usuários.
+4. O ALB troca o target group para Green (100% ou canário).
+5. Se houver problema, o tráfego volta para Blue rapidamente.
