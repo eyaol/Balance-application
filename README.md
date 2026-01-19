@@ -27,7 +27,7 @@ cd Balance-application
 java -jar build/libs/desafio-0.0.1-SNAPSHOT.jar
 ```
 
-Variaveis de ambiente importantes (valores default em `src/main/resources/application.yml`):
+Variaveis de ambiente importantes (valores padrao em `src/main/resources/application.yml`):
 - `AWS_REGION=sa-east-1`
 - `DYNAMODB_ENDPOINT=http://localhost:4566`
 - `SQS_ENDPOINT=http://localhost:4566`
@@ -61,7 +61,7 @@ Exemplo com curl:
 curl http://localhost:8080/balances/{accountId}
 ```
 
-Exemplo de colecao Postman (salve como `balance-collection.json` e importe no Postman):
+Exemplo de colecao Insomnia (salve como `balance-collection.json` e importe no Insomnia):
 
 ```json
 {
@@ -95,7 +95,7 @@ Exemplo de colecao Postman (salve como `balance-collection.json` e importe no Po
 
 ## Arquitetura em producao (exemplo)
 
-Diagrama ilustrativo com blue/green no target group, consumo via SQS do sistema Autorizador e auto scaling por TPS:
+Diagrama ilustrativo com blue/green no target group, consumo via SQS do sistema Autorizador e autoscaling por TPS:
 
 ```mermaid
 flowchart LR
@@ -129,9 +129,9 @@ flowchart LR
   scaling[Auto Scaling TPS] --> ecsf
 ```
 
-Descricao do deploy blue/green:
-1. A versao Blue esta recebendo 100% do trafego no ALB.
-2. A versao Green e criada no ECS Fargate com o novo release.
-3. Health checks e testes validam a Green sem impactar usuarios.
-4. O ALB troca o target group para Green (100% ou canario).
-5. Se houver problema, o trafego volta para Blue rapidamente.
+Descrição do deploy blue/green:
+1. A versão Blue está recebendo 100% do tráfego no ALB.
+2. A versão Green é criada no ECS Fargate com o novo release.
+3. Health checks e testes validam a Green sem impactar usuários.
+4. O ALB troca o target group para Green (100% ou canário).
+5. Se houver problema, o tráfego volta para Blue rapidamente.
